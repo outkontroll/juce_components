@@ -44,8 +44,6 @@ public:
 
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
-    void timerCallback() override;
-
     std::function<void(bool)> onClick;
     void rotateAnimated(float angle, int animationLengthMillisecs);
     //[/UserMethods]
@@ -58,6 +56,7 @@ public:
 
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
+    void timerCallback() override;
     void animationTick();
 
     struct Idle
