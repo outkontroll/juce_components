@@ -127,7 +127,10 @@ void CardComponent::rotateAnimated(float angle, int animationLengthMillisecs)
     std::visit(overloaded {
         [&](const Animating& a)
            {
-               state = Animating{a.originalAngle, angle, Time::getMillisecondCounterHiRes(), animationLengthMillisecs};
+               const auto now = Time::getMillisecondCounterHiRes();
+               const auto elapsed = static_cast<int>(now - a.startTime);
+               const auto remaining = a.animationLength - elapsed;
+               state = Animating{a.originalAngle, angle, a.startTime, remaining + animationLengthMillisecs};
            },
         [&](const Idle& i)
            {
