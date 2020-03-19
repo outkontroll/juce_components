@@ -43,29 +43,19 @@ public:
 
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
-    void triggerAnimation();
     void triggerRotation(bool cw);
-    int swapOffset(int previousOffset) const;
-    Button* createButton(int buttonIndex);
     //[/UserMethods]
 
     void paint (Graphics& g) override;
     void resized() override;
-    void mouseDoubleClick (const MouseEvent& e) override;
 
 
 
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
-    OwnedArray<Component> componentsToAnimate;
-    std::unique_ptr<CardComponent> cardViewer;
-    ComponentAnimator animator;
-    int cycleCount = 2;
-    int buttonOffset = 3;
     //[/UserVariables]
 
     //==============================================================================
-    std::unique_ptr<Component> backgroundcomponent;
     std::unique_ptr<CardComponent> cViewer;
 
 

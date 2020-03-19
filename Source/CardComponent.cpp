@@ -37,7 +37,7 @@ CardComponent::CardComponent ()
     //[UserPreSize]
     //[/UserPreSize]
 
-    setSize (600, 400);
+    setSize (140, 220);
 
 
     //[Constructor] You can add your own custom stuff here..
@@ -67,7 +67,7 @@ void CardComponent::paint (Graphics& g)
         const auto centreX = getBounds().getCentreX();
         const auto centreY = getBounds().getCentreY();
 
-        if(elapsed > animationLength)
+        if(elapsed >= animationLength)
         {
             animating = false;
             stopTimer();
@@ -174,7 +174,7 @@ BEGIN_JUCER_METADATA
 <JUCER_COMPONENT documentType="Component" className="CardComponent" componentName="CardComponent"
                  parentClasses="public Component, private Timer" constructorParams=""
                  variableInitialisers="" snapPixels="8" snapActive="1" snapShown="1"
-                 overlayOpacity="0.330" fixedSize="0" initialWidth="600" initialHeight="400">
+                 overlayOpacity="0.330" fixedSize="0" initialWidth="140" initialHeight="220">
   <METHODS>
     <METHOD name="mouseUp (const MouseEvent&amp; e)"/>
   </METHODS>
