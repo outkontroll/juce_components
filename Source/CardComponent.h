@@ -21,6 +21,7 @@
 
 //[Headers]     -- You can add your own extra header files here --
 #include <JuceHeader.h>
+#include <variant>
 //[/Headers]
 
 
@@ -57,11 +58,22 @@ public:
 
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
-    float originalAngle = 0.0;
-    float finalAngle = 0.0;
-    double start = 0.0;
-    int animationLength = 0;
-    bool animating = false;
+    void animationTick();
+
+    struct Idle
+    {
+        float angle = 0.0;
+    };
+
+    struct Animating
+    {
+        float originalAngle = 0.0;
+        float finalAngle = 0.0;
+        double startTime = 0.0;
+        int animationLength = 0;
+    };
+
+    std::variant<Idle, Animating> state = Idle{};
     //[/UserVariables]
 
     //==============================================================================

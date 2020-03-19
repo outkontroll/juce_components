@@ -24,6 +24,8 @@
 
 
 //[MiscUserDefs] You can add your own user definitions and misc code here...
+template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
+template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>; // not needed as of C++20
 //[/MiscUserDefs]
 
 //==============================================================================
@@ -59,34 +61,6 @@ CardComponent::~CardComponent()
 void CardComponent::paint (Graphics& g)
 {
     //[UserPrePaint] Add your own custom painting code here..
-    if(animating)
-    {
-        const auto now = Time::getMillisecondCounterHiRes();
-        const auto elapsed = now - start;
-
-        const auto centreX = getBounds().getCentreX();
-        const auto centreY = getBounds().getCentreY();
-
-        if(elapsed >= animationLength)
-        {
-            animating = false;
-            stopTimer();
-
-            auto t = AffineTransform::rotation(finalAngle, centreX, centreY);
-            setTransform(t);
-            originalAngle = finalAngle;
-            std::cout << "Animation stop" << std::endl;
-        }
-        else
-        {
-            const auto percentage = elapsed / animationLength;
-            const auto angle = (finalAngle - originalAngle) * percentage + originalAngle;
-
-            auto t = AffineTransform::rotation(angle, centreX, centreY);
-            setTransform(t);
-        }
-    }
-
     //[/UserPrePaint]
 
     g.fillAll (Colour (0xff323e44));
@@ -143,21 +117,56 @@ void CardComponent::mouseUp (const MouseEvent& e)
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
 void CardComponent::timerCallback()
 {
+    animationTick();
     repaint();
 }
 
 void CardComponent::rotateAnimated(float angle, int animationLengthMillisecs)
 {
     constexpr auto hz = 60;
-    //const auto tickMs = animationLengthMillisecs / (1.0 / hz);
-    //angleAdd = (finalAngle - originalAngle) / tickMs;
-    //currentAngle = originalAngle;
-    finalAngle = angle;
-    animationLength = animationLengthMillisecs;
-    start = Time::getMillisecondCounterHiRes();
-    animating = true;
+    std::visit(overloaded {
+        [&](const Animating& a)
+           {
+               state = Animating{a.originalAngle, angle, Time::getMillisecondCounterHiRes(), animationLengthMillisecs};
+           },
+        [&](const Idle& i)
+           {
+               state = Animating{i.angle, angle, Time::getMillisecondCounterHiRes(), animationLengthMillisecs};
+           },
+    }, state);
+
     startTimerHz(hz);
-    std::cout << "Animation start: " << finalAngle << "," << animationLength << "," << start << std::endl;
+}
+
+void CardComponent::animationTick()
+{
+    std::visit(overloaded {
+        [&](const Animating& a)
+           {
+               const auto now = Time::getMillisecondCounterHiRes();
+               const auto elapsed = now - a.startTime;
+
+               const auto centreX = getBounds().getCentreX();
+               const auto centreY = getBounds().getCentreY();
+
+               if(elapsed >= a.animationLength)
+               {
+                   stopTimer();
+
+                   setTransform(AffineTransform::rotation(a.finalAngle, centreX, centreY));
+
+                   state = Idle{a.finalAngle};
+               }
+               else
+               {
+                   const auto percentage = elapsed / a.animationLength;
+                   const auto angle = (a.finalAngle - a.originalAngle) * percentage + a.originalAngle;
+
+                   setTransform(AffineTransform::rotation(angle, centreX, centreY));
+               }
+           },
+        [](const Idle&) {},
+    }, state);
 }
 //[/MiscUserCode]
 
