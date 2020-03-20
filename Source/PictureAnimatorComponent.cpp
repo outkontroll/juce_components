@@ -97,20 +97,9 @@ void PictureAnimatorComponent::triggerRotation(bool cw)
     const auto angle = MathConstants<float>::pi / 2 * index;
     constexpr auto animationDurationMs = 300;
 
-    cViewer->rotateAnimated(angle, animationDurationMs);
+    TransformInfo transformInfo{Rotation{angle}};
+    cViewer->rotateAnimated(transformInfo, animationDurationMs);
 }
-/*
-int PictureAnimatorComponent::swapOffset(int previousOffset) const
-{
-    return previousOffset % 3 + 1;
-}
-
-Button* PictureAnimatorComponent::createButton(int buttonIndex)
-{
-    auto* b = new TextButton();
-    b->setButtonText(std::to_string(buttonIndex));
-    return b;
-}*/
 //[/MiscUserCode]
 
 

@@ -4,6 +4,7 @@
               cppLanguageStandard="17">
   <MAINGROUP id="voqoIZ" name="juce_components">
     <GROUP id="{F5BE2C6E-B3BA-9E4B-C38F-CA9F1A97C7B9}" name="Source">
+      <FILE id="MdPmPk" name="TransformInfo.h" compile="0" resource="0" file="Source/TransformInfo.h"/>
       <FILE id="GFlkha" name="CardComponent.cpp" compile="1" resource="0"
             file="Source/CardComponent.cpp"/>
       <FILE id="q5Ofpo" name="CardComponent.h" compile="0" resource="0" file="Source/CardComponent.h"/>

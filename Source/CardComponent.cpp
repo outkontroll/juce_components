@@ -121,7 +121,7 @@ void CardComponent::timerCallback()
     repaint();
 }
 
-void CardComponent::rotateAnimated(float angle, int animationLengthMillisecs)
+void CardComponent::rotateAnimated(const TransformInfo& transformInfo, int animationLengthMillisecs)
 {
     constexpr auto hz = 60;
     std::visit(overloaded {
@@ -130,11 +130,11 @@ void CardComponent::rotateAnimated(float angle, int animationLengthMillisecs)
                const auto now = Time::getMillisecondCounterHiRes();
                const auto elapsed = static_cast<int>(now - a.startTime);
                const auto remaining = a.animationLength - elapsed;
-               state = Animating{a.originalAngle, angle, a.startTime, remaining + animationLengthMillisecs};
+               state = Animating{a.originalAngle, transformInfo.rotation->angle, a.startTime, remaining + animationLengthMillisecs};
            },
         [&](const Idle& i)
            {
-               state = Animating{i.angle, angle, Time::getMillisecondCounterHiRes(), animationLengthMillisecs};
+               state = Animating{i.angle, transformInfo.rotation->angle, Time::getMillisecondCounterHiRes(), animationLengthMillisecs};
            },
     }, state);
 

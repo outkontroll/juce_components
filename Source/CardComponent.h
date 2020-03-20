@@ -22,6 +22,7 @@
 //[Headers]     -- You can add your own extra header files here --
 #include <JuceHeader.h>
 #include <variant>
+#include "TransformInfo.h"
 //[/Headers]
 
 
@@ -45,7 +46,7 @@ public:
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
     std::function<void(bool)> onClick;
-    void rotateAnimated(float angle, int animationLengthMillisecs);
+    void rotateAnimated(const TransformInfo& transformInfo, int animationLengthMillisecs);
     //[/UserMethods]
 
     void paint (Graphics& g) override;
