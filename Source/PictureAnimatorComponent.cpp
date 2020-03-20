@@ -41,8 +41,11 @@ PictureAnimatorComponent::PictureAnimatorComponent ()
 
 
     //[UserPreSize]
-    cViewer->onClick = [this](bool leftMouse){
-        triggerRotation(leftMouse);
+    cViewer->onClick = [this](bool leftMouse, bool scale){
+        if(scale)
+            triggerScale(leftMouse);
+        else
+            triggerRotation(leftMouse);
     };
     //[/UserPreSize]
 
@@ -95,9 +98,23 @@ void PictureAnimatorComponent::triggerRotation(bool cw)
     static auto index = 0;
     index += (cw ? 1 : -1);
     const auto angle = MathConstants<float>::pi / 2 * index;
-    constexpr auto animationDurationMs = 300;
-
     TransformInfo transformInfo{Rotation{angle}};
+
+    constexpr auto animationDurationMs = 300;
+    cViewer->rotateAnimated(transformInfo, animationDurationMs);
+}
+
+void PictureAnimatorComponent::triggerScale(bool increase)
+{
+    static auto scale = 1.0f;
+    if(increase)
+        scale *= 1.4f;
+    else
+        scale /= 1.4f;
+
+    TransformInfo transformInfo{Scale{scale, scale}};
+
+    constexpr auto animationDurationMs = 300;
     cViewer->rotateAnimated(transformInfo, animationDurationMs);
 }
 //[/MiscUserCode]

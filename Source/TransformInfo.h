@@ -1,13 +1,23 @@
 #pragma once
 
-#include <optional>
+#include <variant>
+
+struct Identity
+{
+};
 
 struct Rotation
 {
     float angle;
 };
 
+struct Scale
+{
+    float factorX;
+    float factorY;
+};
+
 struct TransformInfo
 {
-    std::optional<Rotation> rotation;
+    std::variant<Identity, Rotation, Scale> transformation;
 };

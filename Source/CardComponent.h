@@ -45,7 +45,7 @@ public:
 
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
-    std::function<void(bool)> onClick;
+    std::function<void(bool, bool)> onClick;
     void rotateAnimated(const TransformInfo& transformInfo, int animationLengthMillisecs);
     //[/UserMethods]
 
@@ -63,17 +63,29 @@ private:
     struct Idle
     {
         float angle = 0.0;
+        float factorX = 1.0;
+        float factorY = 1.0;
     };
 
-    struct Animating
+    struct Scaling
     {
+        double startTime = 0.0;
+        float originalFactorX = 1.0;
+        float originalFactorY = 1.0;
+        float finalFactorX = 1.0;
+        float finalFactorY = 1.0;
+        int animationLength = 0.0;
+    };
+
+    struct Rotating
+    {
+        double startTime = 0.0;
         float originalAngle = 0.0;
         float finalAngle = 0.0;
-        double startTime = 0.0;
         int animationLength = 0;
     };
 
-    std::variant<Idle, Animating> state = Idle{};
+    std::variant<Idle, Rotating, Scaling> state = Idle{};
     //[/UserVariables]
 
     //==============================================================================

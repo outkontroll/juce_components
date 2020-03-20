@@ -105,9 +105,9 @@ void CardComponent::mouseUp (const MouseEvent& e)
     if(onClick != nullptr)
     {
         if(e.mods.isLeftButtonDown())
-            onClick(true);
+            onClick(true, e.mods.isCtrlDown());
         else if(e.mods.isRightButtonDown())
-            onClick(false);
+            onClick(false, e.mods.isCtrlDown());
     }
     //[/UserCode_mouseUp]
 }
@@ -125,17 +125,31 @@ void CardComponent::rotateAnimated(const TransformInfo& transformInfo, int anima
 {
     constexpr auto hz = 60;
     std::visit(overloaded {
-        [&](const Animating& a)
-           {
-               const auto now = Time::getMillisecondCounterHiRes();
-               const auto elapsed = static_cast<int>(now - a.startTime);
-               const auto remaining = a.animationLength - elapsed;
-               state = Animating{a.originalAngle, transformInfo.rotation->angle, a.startTime, remaining + animationLengthMillisecs};
-           },
+        [&](const Rotating& /*a*/)
+        {
+//            const auto now = Time::getMillisecondCounterHiRes();
+//            const auto elapsed = static_cast<int>(now - a.startTime);
+//            const auto remaining = a.animationLength - elapsed;
+//            state = Rotating{a.startTime, a.originalAngle, transformInfo.rotation->angle, remaining + animationLengthMillisecs};
+        },
+        [&](const Scaling& /*s*/)
+        {
+//            const auto now = Time::getMillisecondCounterHiRes();
+//            const auto elapsed = static_cast<int>(now - a.startTime);
+//            const auto remaining = a.animationLength - elapsed;
+        },
         [&](const Idle& i)
-           {
-               state = Animating{i.angle, transformInfo.rotation->angle, Time::getMillisecondCounterHiRes(), animationLengthMillisecs};
-           },
+        {
+            std::visit(overloaded{
+                [](const Identity&){},
+                [&](const Rotation& rotationInfo){
+                    state = Rotating{Time::getMillisecondCounterHiRes(), i.angle, rotationInfo.angle, animationLengthMillisecs};
+                },
+                [&](const Scale& scaleInfo){
+                    state = Scaling{Time::getMillisecondCounterHiRes(), i.factorX, i.factorY, scaleInfo.factorX, scaleInfo.factorY, animationLengthMillisecs};
+                },
+            }, transformInfo.transformation);
+        },
     }, state);
 
     startTimerHz(hz);
@@ -143,31 +157,54 @@ void CardComponent::rotateAnimated(const TransformInfo& transformInfo, int anima
 
 void CardComponent::animationTick()
 {
-    std::visit(overloaded {
-        [&](const Animating& a)
-           {
-               const auto now = Time::getMillisecondCounterHiRes();
-               const auto elapsed = now - a.startTime;
+    std::visit(overloaded
+    {
+        [&](const Rotating& a)
+        {
+            const auto now = Time::getMillisecondCounterHiRes();
+            const auto elapsed = now - a.startTime;
 
-               const auto centreX = getBounds().getCentreX();
-               const auto centreY = getBounds().getCentreY();
+            const auto centreX = getBounds().getCentreX();
+            const auto centreY = getBounds().getCentreY();
 
-               if(elapsed >= a.animationLength)
-               {
-                   stopTimer();
+            if(elapsed >= a.animationLength)
+            {
+                stopTimer();
 
-                   setTransform(AffineTransform::rotation(a.finalAngle, centreX, centreY));
+                setTransform(AffineTransform::rotation(a.finalAngle, centreX, centreY));
 
-                   state = Idle{a.finalAngle};
-               }
-               else
-               {
-                   const auto percentage = elapsed / a.animationLength;
-                   const auto angle = (a.finalAngle - a.originalAngle) * percentage + a.originalAngle;
+                state = Idle{a.finalAngle};
+            }
+            else
+            {
+                const auto percentage = elapsed / a.animationLength;
+                const auto angle = (a.finalAngle - a.originalAngle) * percentage + a.originalAngle;
 
-                   setTransform(AffineTransform::rotation(angle, centreX, centreY));
-               }
-           },
+                setTransform(AffineTransform::rotation(angle, centreX, centreY));
+            }
+        },
+        [&](const Scaling& s)
+        {
+            const auto now = Time::getMillisecondCounterHiRes();
+            const auto elapsed = now - s.startTime;
+
+            if(elapsed >= s.animationLength)
+            {
+                stopTimer();
+
+                setTransform(AffineTransform::scale(s.finalFactorX, s.finalFactorY));
+
+                state = Idle{};
+            }
+            else
+            {
+                const auto percentage = elapsed / s.animationLength;
+                const auto factorX = (s.finalFactorX - s.originalFactorX) * percentage + s.originalFactorX;
+                const auto factorY = (s.finalFactorY - s.originalFactorY) * percentage + s.originalFactorY;
+
+                setTransform(AffineTransform::scale(factorX, factorY));
+            }
+        },
         [](const Idle&) {},
     }, state);
 }
