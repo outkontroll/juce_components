@@ -60,32 +60,37 @@ private:
     void timerCallback() override;
     void animationTick();
 
+    float angle = 0.0;
+    float factorX = 1.0;
+    float factorY = 1.0;
+
     struct Idle
     {
-        float angle = 0.0;
-        float factorX = 1.0;
-        float factorY = 1.0;
     };
 
-    struct Scaling
+    struct Animating
     {
         double startTime = 0.0;
-        float originalFactorX = 1.0;
-        float originalFactorY = 1.0;
-        float finalFactorX = 1.0;
-        float finalFactorY = 1.0;
         int animationLength = 0.0;
+
+        struct Scaling
+        {
+            float originalFactorX = 1.0;
+            float originalFactorY = 1.0;
+            float finalFactorX = 1.0;
+            float finalFactorY = 1.0;
+        };
+
+        struct Rotating
+        {
+            float originalAngle = 0.0;
+            float finalAngle = 0.0;
+        };
+
+        std::variant<Rotating, Scaling> type;
     };
 
-    struct Rotating
-    {
-        double startTime = 0.0;
-        float originalAngle = 0.0;
-        float finalAngle = 0.0;
-        int animationLength = 0;
-    };
-
-    std::variant<Idle, Rotating, Scaling> state = Idle{};
+    std::variant<Idle, Animating> state = Idle{};
     //[/UserVariables]
 
     //==============================================================================

@@ -124,29 +124,30 @@ void CardComponent::timerCallback()
 void CardComponent::rotateAnimated(const TransformInfo& transformInfo, int animationLengthMillisecs)
 {
     constexpr auto hz = 60;
-    std::visit(overloaded {
-        [&](const Rotating& /*a*/)
+    std::visit(overloaded {/*
+        [&](const Animating::Rotating&)
         {
 //            const auto now = Time::getMillisecondCounterHiRes();
 //            const auto elapsed = static_cast<int>(now - a.startTime);
 //            const auto remaining = a.animationLength - elapsed;
 //            state = Rotating{a.startTime, a.originalAngle, transformInfo.rotation->angle, remaining + animationLengthMillisecs};
         },
-        [&](const Scaling& /*s*/)
+        [&](const Animating::Scaling&)
         {
 //            const auto now = Time::getMillisecondCounterHiRes();
 //            const auto elapsed = static_cast<int>(now - a.startTime);
 //            const auto remaining = a.animationLength - elapsed;
-        },
-        [&](const Idle& i)
+        },*/
+        [&](const auto&){},
+        [&](const Idle&)
         {
             std::visit(overloaded{
                 [](const Identity&){},
                 [&](const Rotation& rotationInfo){
-                    state = Rotating{Time::getMillisecondCounterHiRes(), i.angle, rotationInfo.angle, animationLengthMillisecs};
+                    state = Animating{Time::getMillisecondCounterHiRes(), animationLengthMillisecs, Animating::Rotating{angle, rotationInfo.angle}};
                 },
                 [&](const Scale& scaleInfo){
-                    state = Scaling{Time::getMillisecondCounterHiRes(), i.factorX, i.factorY, scaleInfo.factorX, scaleInfo.factorY, animationLengthMillisecs};
+                    state = Animating{Time::getMillisecondCounterHiRes(), animationLengthMillisecs, Animating::Scaling{factorX, factorY, scaleInfo.factorX, scaleInfo.factorY}};
                 },
             }, transformInfo.transformation);
         },
@@ -159,7 +160,7 @@ void CardComponent::animationTick()
 {
     std::visit(overloaded
     {
-        [&](const Rotating& a)
+        [&](const Animating& a)
         {
             const auto now = Time::getMillisecondCounterHiRes();
             const auto elapsed = now - a.startTime;
@@ -167,43 +168,49 @@ void CardComponent::animationTick()
             const auto centreX = getBounds().getCentreX();
             const auto centreY = getBounds().getCentreY();
 
-            if(elapsed >= a.animationLength)
+            std::visit(overloaded
             {
-                stopTimer();
+                [&](const Animating::Rotating& r)
+                {
+                    if(elapsed >= a.animationLength)
+                    {
+                        stopTimer();
 
-                setTransform(AffineTransform::rotation(a.finalAngle, centreX, centreY));
+                        setTransform(AffineTransform::rotation(r.finalAngle, centreX, centreY));
 
-                state = Idle{a.finalAngle};
-            }
-            else
-            {
-                const auto percentage = elapsed / a.animationLength;
-                const auto angle = (a.finalAngle - a.originalAngle) * percentage + a.originalAngle;
+                        angle = r.finalAngle;
+                        state = Idle{};
+                    }
+                    else
+                    {
+                        const auto percentage = elapsed / a.animationLength;
+                        const auto angle = (r.finalAngle - r.originalAngle) * percentage + r.originalAngle;
 
-                setTransform(AffineTransform::rotation(angle, centreX, centreY));
-            }
-        },
-        [&](const Scaling& s)
-        {
-            const auto now = Time::getMillisecondCounterHiRes();
-            const auto elapsed = now - s.startTime;
+                        setTransform(AffineTransform::rotation(angle, centreX, centreY));
+                    }
+                },
+                [&](const Animating::Scaling& s)
+                {
+                    if(elapsed >= a.animationLength)
+                    {
+                        stopTimer();
 
-            if(elapsed >= s.animationLength)
-            {
-                stopTimer();
+                        setTransform(AffineTransform::scale(s.finalFactorX, s.finalFactorY, centreX, centreY));
 
-                setTransform(AffineTransform::scale(s.finalFactorX, s.finalFactorY));
+                        factorX = s.finalFactorX;
+                        factorY = s.finalFactorY;
+                        state = Idle{};
+                    }
+                    else
+                    {
+                        const auto percentage = elapsed / a.animationLength;
+                        const auto factorX = (s.finalFactorX - s.originalFactorX) * percentage + s.originalFactorX;
+                        const auto factorY = (s.finalFactorY - s.originalFactorY) * percentage + s.originalFactorY;
 
-                state = Idle{};
-            }
-            else
-            {
-                const auto percentage = elapsed / s.animationLength;
-                const auto factorX = (s.finalFactorX - s.originalFactorX) * percentage + s.originalFactorX;
-                const auto factorY = (s.finalFactorY - s.originalFactorY) * percentage + s.originalFactorY;
-
-                setTransform(AffineTransform::scale(factorX, factorY));
-            }
+                        setTransform(AffineTransform::scale(factorX, factorY, centreX, centreY));
+                    }
+                },
+            }, a.type);
         },
         [](const Idle&) {},
     }, state);
