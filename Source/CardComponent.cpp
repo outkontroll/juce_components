@@ -187,15 +187,11 @@ void CardComponent::animationTick()
 
                         angle = r.finalAngle;
                         state = Idle{};
-
-                        setTransform(AffineTransform::rotation(angle, centreX, centreY).followedBy(AffineTransform::scale(factorX, factorY, centreX, centreY)));
                     }
                     else
                     {
                         const auto percentage = elapsed / a.animationLength;
-                        const auto currentAngle = (r.finalAngle - r.originalAngle) * percentage + r.originalAngle;
-
-                        setTransform(AffineTransform::rotation(currentAngle, centreX, centreY).followedBy(AffineTransform::scale(factorX, factorY, centreX, centreY)));
+                        angle = (r.finalAngle - r.originalAngle) * percentage + r.originalAngle;
                     }
                 },
                 [&](const Animating::Scaling& s)
@@ -207,19 +203,17 @@ void CardComponent::animationTick()
                         factorX = s.finalFactorX;
                         factorY = s.finalFactorY;
                         state = Idle{};
-
-                        setTransform(AffineTransform::rotation(angle, centreX, centreY).followedBy(AffineTransform::scale(factorX, factorY, centreX, centreY)));
                     }
                     else
                     {
                         const auto percentage = elapsed / a.animationLength;
-                        const auto currentFactorX = (s.finalFactorX - s.originalFactorX) * percentage + s.originalFactorX;
-                        const auto currentFactorY = (s.finalFactorY - s.originalFactorY) * percentage + s.originalFactorY;
-
-                        setTransform(AffineTransform::rotation(angle, centreX, centreY).followedBy(AffineTransform::scale(currentFactorX, currentFactorY, centreX, centreY)));
+                        factorX = (s.finalFactorX - s.originalFactorX) * percentage + s.originalFactorX;
+                        factorY = (s.finalFactorY - s.originalFactorY) * percentage + s.originalFactorY;
                     }
                 },
             }, a.type);
+
+            setTransform(AffineTransform::rotation(angle, centreX, centreY).followedBy(AffineTransform::scale(factorX, factorY, centreX, centreY)));
         },
         [this](const Idle&)
         {
