@@ -113,9 +113,9 @@ void CardComponent::mouseUp (const MouseEvent& e)
     if(onClick != nullptr)
     {
         if(e.mods.isLeftButtonDown())
-            onClick(true, e.mods.isCtrlDown());
+            onClick(true, e.mods.isShiftDown());
         else if(e.mods.isRightButtonDown())
-            onClick(false, e.mods.isCtrlDown());
+            onClick(false, e.mods.isShiftDown());
     }
     //[/UserCode_mouseUp]
 }
