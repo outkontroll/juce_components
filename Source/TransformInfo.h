@@ -19,5 +19,5 @@ struct Scale
 
 struct TransformInfo
 {
-    std::variant<Identity, Rotation, Scale> transformation;
+    std::variant<Identity, Rotation, Scale> transformation = Identity{};
 };

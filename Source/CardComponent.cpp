@@ -87,6 +87,14 @@ void CardComponent::paint (Graphics& g)
     }
 
     //[UserPaint] Add your own custom painting code here..
+    {
+        const int x = 12, y = 40, width = 116;
+        const String text ("Angle: " + std::to_string(angle) + "\nFactor X: " + std::to_string(factorX) + "\nFactor Y: " + std::to_string(factorY));
+        const Colour fillColour = Colours::aqua;
+        g.setColour (fillColour);
+        g.setFont (Font (15.00f, Font::plain).withTypefaceStyle ("Regular"));
+        g.drawMultiLineText(text, x, y, width, Justification::centred);
+    }
     //[/UserPaint]
 }
 
@@ -150,10 +158,11 @@ void CardComponent::rotateAnimated(const TransformInfo& transformInfo, int anima
                     state = Animating{Time::getMillisecondCounterHiRes(), animationLengthMillisecs, Animating::Scaling{factorX, factorY, scaleInfo.factorX, scaleInfo.factorY}};
                 },
             }, transformInfo.transformation);
+
+            startTimerHz(hz);
         },
     }, state);
 
-    startTimerHz(hz);
 }
 
 void CardComponent::animationTick()
@@ -176,17 +185,17 @@ void CardComponent::animationTick()
                     {
                         stopTimer();
 
-                        setTransform(AffineTransform::rotation(r.finalAngle, centreX, centreY));
-
                         angle = r.finalAngle;
                         state = Idle{};
+
+                        setTransform(AffineTransform::rotation(angle, centreX, centreY).followedBy(AffineTransform::scale(factorX, factorY, centreX, centreY)));
                     }
                     else
                     {
                         const auto percentage = elapsed / a.animationLength;
-                        const auto angle = (r.finalAngle - r.originalAngle) * percentage + r.originalAngle;
+                        const auto currentAngle = (r.finalAngle - r.originalAngle) * percentage + r.originalAngle;
 
-                        setTransform(AffineTransform::rotation(angle, centreX, centreY));
+                        setTransform(AffineTransform::rotation(currentAngle, centreX, centreY).followedBy(AffineTransform::scale(factorX, factorY, centreX, centreY)));
                     }
                 },
                 [&](const Animating::Scaling& s)
@@ -195,24 +204,28 @@ void CardComponent::animationTick()
                     {
                         stopTimer();
 
-                        setTransform(AffineTransform::scale(s.finalFactorX, s.finalFactorY, centreX, centreY));
-
                         factorX = s.finalFactorX;
                         factorY = s.finalFactorY;
                         state = Idle{};
+
+                        setTransform(AffineTransform::rotation(angle, centreX, centreY).followedBy(AffineTransform::scale(factorX, factorY, centreX, centreY)));
                     }
                     else
                     {
                         const auto percentage = elapsed / a.animationLength;
-                        const auto factorX = (s.finalFactorX - s.originalFactorX) * percentage + s.originalFactorX;
-                        const auto factorY = (s.finalFactorY - s.originalFactorY) * percentage + s.originalFactorY;
+                        const auto currentFactorX = (s.finalFactorX - s.originalFactorX) * percentage + s.originalFactorX;
+                        const auto currentFactorY = (s.finalFactorY - s.originalFactorY) * percentage + s.originalFactorY;
 
-                        setTransform(AffineTransform::scale(factorX, factorY, centreX, centreY));
+                        setTransform(AffineTransform::rotation(angle, centreX, centreY).followedBy(AffineTransform::scale(currentFactorX, currentFactorY, centreX, centreY)));
                     }
                 },
             }, a.type);
         },
-        [](const Idle&) {},
+        [this](const Idle&)
+        {
+            if(isTimerRunning())
+                stopTimer();
+        },
     }, state);
 }
 //[/MiscUserCode]
