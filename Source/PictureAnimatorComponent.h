@@ -45,6 +45,7 @@ public:
     //[UserMethods]     -- You can add your own custom methods in this section.
     void triggerRotation(bool cw);
     void triggerScale(bool increase);
+    void triggerTranslation(bool forward);
     //[/UserMethods]
 
     void paint (Graphics& g) override;

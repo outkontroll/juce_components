@@ -112,10 +112,13 @@ void CardComponent::mouseUp (const MouseEvent& e)
     //[UserCode_mouseUp] -- Add your code here...
     if(onClick != nullptr)
     {
-        if(e.mods.isLeftButtonDown())
-            onClick(true, e.mods.isShiftDown());
-        else if(e.mods.isRightButtonDown())
-            onClick(false, e.mods.isShiftDown());
+        AnimationType animationType{rotation};
+        if(e.mods.isShiftDown())
+            animationType = scale;
+        if(e.mods.isCtrlDown())
+            animationType = translation;
+
+        onClick(e.mods.isLeftButtonDown(), animationType);
     }
     //[/UserCode_mouseUp]
 }
@@ -156,6 +159,9 @@ void CardComponent::rotateAnimated(const TransformInfo& transformInfo, int anima
                 },
                 [&](const Scale& scaleInfo){
                     state = Animating{Time::getMillisecondCounterHiRes(), animationLengthMillisecs, Animating::Scaling{factorX, factorY, scaleInfo.factorX, scaleInfo.factorY}};
+                },
+                [&](const Translation& offsetInfo){
+                    state = Animating{Time::getMillisecondCounterHiRes(), animationLengthMillisecs, Animating::Translating{offsetX, offsetY, offsetX + offsetInfo.offsetX, offsetY + offsetInfo.offsetY}};
                 },
             }, transformInfo.transformation);
 
@@ -211,9 +217,28 @@ void CardComponent::animationTick()
                         factorY = (s.finalFactorY - s.originalFactorY) * percentage + s.originalFactorY;
                     }
                 },
+                [&](const Animating::Translating& t)
+                {
+                    if(elapsed >= a.animationLength)
+                    {
+                        stopTimer();
+
+                        offsetX = t.finalOffsetX;
+                        offsetY = t.finalOffsetY;
+                        state = Idle{};
+                    }
+                    else
+                    {
+                        const auto percentage = elapsed / a.animationLength;
+                        offsetX = (t.finalOffsetX - t.originalOffsetX) * percentage + t.originalOffsetX;
+                        offsetY = (t.finalOffsetY - t.originalOffsetY) * percentage + t.originalOffsetY;
+                    }
+                }
             }, a.type);
 
-            setTransform(AffineTransform::rotation(angle, centreX, centreY).followedBy(AffineTransform::scale(factorX, factorY, centreX, centreY)));
+            setTransform(AffineTransform::rotation(angle, centreX, centreY).
+              followedBy(AffineTransform::scale(factorX, factorY, centreX, centreY)).
+              followedBy(AffineTransform::translation(offsetX, offsetY)));
         },
         [this](const Idle&)
         {

@@ -41,11 +41,13 @@ PictureAnimatorComponent::PictureAnimatorComponent ()
 
 
     //[UserPreSize]
-    cViewer->onClick = [this](bool leftMouse, bool scale){
-        if(scale)
+    cViewer->onClick = [this](bool leftMouse, CardComponent::AnimationType animationType){
+        if(animationType & CardComponent::scale)
             triggerScale(leftMouse);
-        else
+        else if(animationType & CardComponent::rotation)
             triggerRotation(leftMouse);
+        else if(animationType & CardComponent::translation)
+            triggerTranslation(leftMouse);
     };
     //[/UserPreSize]
 
@@ -113,6 +115,17 @@ void PictureAnimatorComponent::triggerScale(bool increase)
         scale /= 1.4f;
 
     TransformInfo transformInfo{Scale{scale, scale}};
+
+    constexpr auto animationDurationMs = 300;
+    cViewer->rotateAnimated(transformInfo, animationDurationMs);
+}
+
+void PictureAnimatorComponent::triggerTranslation(bool forward)
+{
+    static auto offset = 50.0f;
+    offset = fabs(offset) * (forward ? 1 : -1);
+
+    TransformInfo transformInfo{Translation{offset, 0.0}};
 
     constexpr auto animationDurationMs = 300;
     cViewer->rotateAnimated(transformInfo, animationDurationMs);

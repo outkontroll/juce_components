@@ -17,7 +17,13 @@ struct Scale
     float factorY;
 };
 
+struct Translation
+{
+    float offsetX;
+    float offsetY;
+};
+
 struct TransformInfo
 {
-    std::variant<Identity, Rotation, Scale> transformation = Identity{};
+    std::variant<Identity, Rotation, Scale, Translation> transformation = Identity{};
 };
