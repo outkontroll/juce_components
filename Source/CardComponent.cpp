@@ -88,8 +88,8 @@ void CardComponent::paint (Graphics& g)
 
     //[UserPaint] Add your own custom painting code here..
     {
-        const int x = 12, y = 40, width = 116;
-        const String text ("Angle: " + std::to_string(angle) + "\nFactor X: " + std::to_string(factorX) + "\nFactor Y: " + std::to_string(factorY));
+        const int x = 12, y = 40, width = 140;
+        const String text ("Angle: " + std::to_string(angle) + "\nFactor X: " + std::to_string(factorX) + "\nFactor Y: " + std::to_string(factorY) + "\nOffset X: " + std::to_string(offsetX) + "\nOffset Y: " + std::to_string(offsetY));
         const Colour fillColour = Colours::aqua;
         g.setColour (fillColour);
         g.setFont (Font (15.00f, Font::plain).withTypefaceStyle ("Regular"));
